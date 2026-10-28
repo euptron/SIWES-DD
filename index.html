@@ -323,8 +323,7 @@
 
   const qsApi = new URLSearchParams(location.search).get('api');
   if (qsApi) localStorage.setItem('siwes_api', qsApi);
-  const sameHost = ['localhost', '127.0.0.1', 'onrender.com', 'hf.space']
-    .some(d => location.hostname.endsWith(d)) || location.protocol === 'file:';
+  const sameHost = ['localhost', '127.0.0.1'].some(d => location.hostname.endsWith(d)) || location.protocol === 'file:';
   let API = qsApi || localStorage.getItem('siwes_api') || (sameHost ? '' : FALLBACK_API);
   if (!API && !sameHost) API = location.origin;
 

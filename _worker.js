@@ -1,5 +1,5 @@
 /*
- * SIWES-DD as a Cloudflare Worker (100% Cloudflare, no other host needed).
+ * SIWES-DD Cloudflare Worker
  *
  * The old SIWES portal still runs on its original server, but its DNS record
  * was deleted. This Worker reaches the portal's real IP over TLS, speaks HTTP
@@ -453,22 +453,22 @@ async function handleDiag() {
 
   try {
     const socket = await openSocket();
-    step('connect and TLS handshake to the portal server', true, 'connected to ' + ORIGIN_HOST + ':443');
+    step('Reached the portal server', true, 'secure connection opened to ' + ORIGIN_HOST);
     const w = socket.writable.getWriter();
     await w.write(enc(buildRequest('GET', '/')));
     w.releaseLock();
     const res = await portal2(socket);
-    step('HTTP request with the portal name', true, 'status ' + res.status);
+    step('Asked the portal for its opening page', true, 'the portal replied ' + res.status);
     const isPortal = res.text.includes('SIWES') || res.text.includes('siwes');
-    step('portal content check', isPortal, isPortal ? 'the real portal answered' : 'unexpected page came back');
+    step('Confirmed it is the real portal', isPortal, isPortal ? 'the real portal answered' : 'a different page came back');
     try { await socket.close(); } catch (_) {}
     out.ok = isPortal;
   } catch (e) {
-    step('connect and TLS handshake to the portal server', false, e.message);
+    step('Reached the portal server', false, e.message);
     step('HTTP request with the portal name', false, 'not reached');
     step('portal content check', false, 'not reached');
     out.ok = false;
-    out.hint = 'If the TLS step fails, this Worker cannot reach the portal from Cloudflare. Use the Node helper in the site folder instead (Hugging Face or Render).';
+    out.hint = 'Cloudflare could not reach the portal this time. Try again in a little while, and tell euptron if it keeps failing.';
   }
   return new Response(JSON.stringify(out, null, 2), { headers: jsonHeaders });
 }
