@@ -1,0 +1,5 @@
+{
+  "name": "siwes-dd",
+  "compatibility_date": "2026-10-23",
+  "main": "_worker.js"
+}
