@@ -13,7 +13,10 @@
  */
 import { connect } from 'cloudflare:sockets';
 
-const IP = '162.0.232.194';
+// The portal's real public hostname (found by reverse DNS of the old address).
+// It points to the same server the portal runs on, and direct TLS connections
+// by hostname are the kind Cloudflare's network allows Workers to open.
+const ORIGIN_HOST = 'business77-1.web-hosting.com';
 const HOST = 'siwes.myunical.online';
 const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)';
 const MAX_BYTES = 40 * 1024 * 1024;
@@ -225,7 +228,7 @@ function buildRequest(method, path, { body = null, cookie = null } = {}) {
 }
 
 async function openSocket() {
-  const socket = connect(IP + ':443', { secureTransport: 'on' });
+  const socket = connect(ORIGIN_HOST + ':443', { secureTransport: 'on' });
   await withTimeout(socket.opened, 25000, 'Could not connect to the portal in time.');
   return socket;
 }
@@ -450,7 +453,7 @@ async function handleDiag() {
 
   try {
     const socket = await openSocket();
-    step('connect and TLS handshake to the portal server', true, 'connected to ' + IP + ':443');
+    step('connect and TLS handshake to the portal server', true, 'connected to ' + ORIGIN_HOST + ':443');
     const w = socket.writable.getWriter();
     await w.write(enc(buildRequest('GET', '/')));
     w.releaseLock();
