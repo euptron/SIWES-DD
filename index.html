@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Download your UNICAL SIWES documents.">
+  <meta name="theme-color" content="#f3f1ec">
+  <title>SIWES-DD</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --paper: #f3f1ec;
+      --surface: #fbfaf7;
+      --ink: #1c1a17;
+      --muted: #686259;
+      --line: #d8d2c7;
+      --line-strong: #8f887d;
+      --wash: #e8e3da;
+      --serif: ui-serif, "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
+      --sans: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      --radius: 2px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; }
+
+    html { background: var(--paper); -webkit-text-size-adjust: 100%; }
+
+    body {
+      margin: 0;
+      background: var(--paper);
+      color: var(--ink);
+      font-family: var(--sans);
+      font-size: 1rem;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    ::selection { background: var(--ink); color: var(--paper); }
+
+    h1, h2 {
+      margin: 0;
+      font-family: var(--serif);
+      font-weight: 500;
+      line-height: 1.1;
+      letter-spacing: -0.02em;
+    }
+
+    p { margin: 0; }
+
+    button, input { font: inherit; color: inherit; }
+
+    button { cursor: pointer; }
+
+    .wrap {
+      width: 100%;
+      max-width: 640px;
+      margin: 0 auto;
+      padding-right: clamp(1rem, 5vw, 2rem);
+      padding-left: clamp(1rem, 5vw, 2rem);
+    }
+
+    .site-header {
+      padding: clamp(2.5rem, 6vw, 4rem) 0 clamp(2rem, 4.5vw, 3rem);
+      border-top: 3px solid var(--ink);
+      border-bottom: 1px solid var(--line);
+    }
+
+    .site-header h1 { font-size: clamp(2.15rem, 5.5vw, 3rem); }
+
+    .tagline {
+      max-width: 50ch;
+      margin-top: 1rem;
+      color: var(--muted);
+      font-size: 1rem;
+    }
+
+    .section {
+      padding: clamp(2.25rem, 5vw, 3.5rem) 0;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .section:last-child { border-bottom: 0; }
+
+    .section h2 { font-size: clamp(1.5rem, 4vw, 1.9rem); }
+
+    .note {
+      max-width: 60ch;
+      margin-top: 0.55rem;
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    form { margin-top: 1.65rem; }
+
+    .field { margin-bottom: 14px; }
+
+    .field-label {
+      display: block;
+      margin-bottom: 5px;
+      color: var(--muted);
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.09em;
+      text-transform: uppercase;
+    }
+
+    input {
+      width: 100%;
+      height: max(44px, 2.75rem);
+      padding: 0 12px;
+      border: 1px solid var(--line-strong);
+      border-radius: var(--radius);
+      background-color: var(--surface);
+      color: var(--ink);
+      font-size: 1rem;
+      transition: border-color 0.15s ease, background-color 0.15s ease;
+    }
+
+    input::placeholder { color: #948d82; opacity: 1; }
+
+    input:hover { border-color: var(--muted); }
+
+    input:focus {
+      outline: 2px solid var(--ink);
+      outline-offset: 1px;
+      border-color: var(--ink);
+      background-color: #ffffff;
+    }
+
+    .pwd-wrap { position: relative; }
+
+    .pwd-wrap input { padding-right: 46px; }
+
+    .eye {
+      position: absolute;
+      top: 50%;
+      right: 4px;
+      transform: translateY(-50%);
+      display: grid;
+      place-items: center;
+      width: 38px;
+      height: 38px;
+      padding: 0;
+      border: 0;
+      border-radius: var(--radius);
+      background: transparent;
+      color: var(--muted);
+    }
+
+    .eye:hover { color: var(--ink); background: var(--surface); }
+
+    .eye:focus-visible {
+      outline: 2px solid var(--ink);
+      outline-offset: 1px;
+    }
+
+    .eye svg { width: 18px; height: 18px; }
+
+    [hidden] { display: none !important; }
+
+    .button-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 9px;
+      margin-top: 1.35rem;
+    }
+
+    .btn {
+      min-height: max(44px, 2.75rem);
+      padding: 0 18px;
+      border: 1px solid var(--line-strong);
+      border-radius: var(--radius);
+      background: transparent;
+      color: var(--ink);
+      font-size: 0.92rem;
+      font-weight: 500;
+      appearance: none;
+      transition: color 0.15s ease, border-color 0.15s ease, background-color 0.15s ease;
+    }
+
+    .btn:hover { border-color: var(--ink); background: var(--surface); }
+
+    .btn-primary {
+      border-color: var(--ink);
+      background: var(--ink);
+      color: var(--paper);
+    }
+
+    .btn-primary:hover { border-color: #35322d; background: #35322d; }
+
+    .btn:disabled { opacity: 0.55; cursor: wait; }
+
+    .btn:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+
+    .message { margin-top: 0.9rem; font-size: 0.9rem; line-height: 1.5; }
+
+    .message:empty { margin-top: 0; }
+
+    .message.error {
+      padding: 0.65rem 0.8rem;
+      border-left: 2px solid var(--ink);
+      background: var(--wash);
+    }
+
+    .result { margin-top: 1.25rem; }
+
+    .result[hidden] { display: none; }
+
+    .doc-list {
+      margin: 0.4rem 0 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .doc-list li {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 0.3rem 1rem;
+      align-items: center;
+      padding: 0.8rem 0;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .doc-list li:first-child { border-top: 1px solid var(--line); }
+
+    .doc-name { font-size: 0.95rem; }
+
+    .doc-size {
+      grid-column: 1;
+      color: var(--muted);
+      font-variant-numeric: tabular-nums;
+      font-size: 0.8rem;
+    }
+
+    .doc-list .btn {
+      grid-column: 2;
+      grid-row: 1 / span 2;
+      align-self: center;
+      min-height: 2.4rem;
+      padding: 0 14px;
+      font-size: 0.85rem;
+    }
+
+    .site-footer {
+      padding: 1.35rem 0 2.25rem;
+      border-top: 1px solid var(--line-strong);
+      text-align: center;
+    }
+
+    .site-footer p { color: var(--muted); font-size: 0.8rem; }
+
+    .site-footer a { color: var(--ink); text-underline-offset: 2px; }
+
+    @media (max-width: 640px) {
+      .btn { width: 100%; }
+      .doc-list .btn { width: 100%; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { transition-duration: 0.01ms !important; }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="site-header">
+    <div class="wrap">
+      <h1>SIWES-DD</h1>
+      <p class="tagline">Your UNICAL SIWES documents. Use the same email or phone and password as the SIWES portal.</p>
+    </div>
+  </header>
+
+  <main class="wrap">
+
+    <section class="section" aria-labelledby="docs-title">
+      <h2 id="docs-title">Your documents</h2>
+      <p class="note">Log in to see your files, then download the ones you need.</p>
+
+      <form id="f">
+        <div class="field">
+          <label class="field-label" for="identity">Email or phone number</label>
+          <input id="identity" autocomplete="username" required>
+        </div>
+        <div class="field">
+          <label class="field-label" for="password">Password or matric no.</label>
+          <div class="pwd-wrap">
+            <input id="password" type="password" autocomplete="current-password" required>
+            <button type="button" class="eye" id="togglePwd" aria-label="Show password" aria-pressed="false">
+              <svg id="eyeShow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M2 12s3.5-6.5 10-6.5S22 12 22 12s-3.5 6.5-10 6.5S2 12 2 12Z"/>
+                <circle cx="12" cy="12" r="2.8"/>
+              </svg>
+              <svg id="eyeHide" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" hidden>
+                <path d="M4 4l16 16"/>
+                <path d="M10.6 5.2A11 11 0 0 1 12 5c6.5 0 10 7 10 7a17.8 17.8 0 0 1-3.1 3.9M6.1 6.1A16.6 16.6 0 0 0 2 12s3.5 7 10 7c1.5 0 2.9-.3 4.1-.9"/>
+                <path d="M9.9 9.9a2.9 2.9 0 0 0 4.2 4.2"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+        <div class="button-row">
+          <button type="submit" id="go" class="btn btn-primary">See my documents</button>
+        </div>
+      </form>
+
+      <p id="message" class="message" role="status" aria-live="polite"></p>
+
+      <div class="result" id="result" hidden>
+        <ul class="doc-list" id="doc-list"></ul>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap footer-inner">
+      <p>by <a href="https://euptron.pages.dev">euptron</a></p>
+    </div>
+  </footer>
+
+<script>
+  const FALLBACK_API = '';
+
+  const qsApi = new URLSearchParams(location.search).get('api');
+  if (qsApi) localStorage.setItem('siwes_api', qsApi);
+  const sameHost = ['localhost', '127.0.0.1', 'onrender.com', 'hf.space']
+    .some(d => location.hostname.endsWith(d)) || location.protocol === 'file:';
+  let API = qsApi || localStorage.getItem('siwes_api') || (sameHost ? '' : FALLBACK_API);
+  if (!API && !sameHost) API = location.origin;
+
+  const $ = id => document.getElementById(id);
+  const msg = $('message');
+
+  function say(text, isError) {
+    msg.textContent = text;
+    msg.classList.toggle('error', Boolean(isError));
+  }
+
+  function body(extra) {
+    return JSON.stringify(Object.assign({
+      identity: $('identity').value.trim(),
+      password: $('password').value,
+    }, extra || {}));
+  }
+
+  function prettyName(name) {
+    return name.replace(/_/g, ' ').replace(/\.(html|pdf)$/i, '');
+  }
+
+  $('togglePwd').addEventListener('click', () => {
+    const input = $('password');
+    const show = input.type === 'password';
+    input.type = show ? 'text' : 'password';
+    $('eyeShow').hidden = show;
+    $('eyeHide').hidden = !show;
+    const btn = $('togglePwd');
+    btn.setAttribute('aria-pressed', String(show));
+    btn.setAttribute('aria-label', show ? 'Hide password' : 'Show password');
+  });
+
+  $('f').addEventListener('submit', async ev => {
+    ev.preventDefault();
+    say('');
+    $('result').hidden = true;
+    const btn = $('go');
+    btn.disabled = true;
+    btn.textContent = 'One moment';
+    try {
+      const r = await fetch(API + '/api/list', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: body(),
+      });
+      const t = await r.text();
+      let j = {};
+      try { j = JSON.parse(t); } catch (err) { j = { ok: false, error: 'Service problem (status ' + r.status + '). Wait a moment and try again.' }; }
+      if (!j.ok) throw new Error(j.error || 'Could not reach the portal. Try again.');
+      say('Files found');
+      $('doc-list').innerHTML = j.documents.map(d =>
+        '<li data-path="' + d.path + '" data-file="' + d.file + '">' +
+        '<span class="doc-name">' + prettyName(d.name) + '</span>' +
+        '<span class="doc-size">' +
+        (d.size > 1048576 ? (d.size / 1048576).toFixed(1) + ' MB' : Math.round(d.size / 1024) + ' KB') +
+        '</span>' +
+        '<button type="button" class="btn doc-dl">Download</button>' +
+        '</li>'
+      ).join('');
+      $('result').hidden = false;
+    } catch (e) {
+      say(e.message, true);
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'See my documents';
+    }
+  });
+
+  $('doc-list').addEventListener('click', async ev => {
+    const btn = ev.target.closest('.doc-dl');
+    if (!btn) return;
+    const li = btn.closest('li');
+    const original = btn.textContent;
+    btn.disabled = true;
+    btn.textContent = 'Saving';
+    try {
+      const r = await fetch(API + '/api/doc', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: body({ path: li.dataset.path }),
+      });
+      if (!r.ok) {
+        const j = await r.json().catch(() => ({}));
+        throw new Error(j.error || 'Download problem (status ' + r.status + '). Try again.');
+      }
+      const blob = await r.blob();
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = li.dataset.file;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(a.href), 60000);
+      say('Saved ' + prettyName(li.dataset.file) + '. Check your Downloads folder.');
+    } catch (e) {
+      say(e.message, true);
+    } finally {
+      btn.disabled = false;
+      btn.textContent = original;
+    }
+  });
+</script>
+</body>
+</html>
