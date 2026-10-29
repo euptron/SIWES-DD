@@ -424,7 +424,7 @@ function looksLikeFileOk(res, isPdf) {
 }
 
 function forPrint(html) {
-  let out = html.replace(/<script[\s\S]*?<\/script>/gi, '').replace(/<meta[^>]+http-equiv=["']?refresh["']?[^>]*>/gi, '');
+  let out = html.replace(/<link[\s\S]*?rel="stylesheet"[^>]*>/gi, '');
   const bits = '<style>@page { size: A4; margin: 14mm; } html, body { margin: 0; padding: 0; background: #ffffff; } img { max-width: 100%; height: auto; }</style>'
     + '<script>setTimeout(function () { window.print(); }, 600);</script>';
   if (/<\/body>/i.test(out)) out = out.replace(/<\/body>/i, bits + '</body>');
