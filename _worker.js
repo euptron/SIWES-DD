@@ -97,13 +97,13 @@ const PAGE = `<!DOCTYPE html>
   <header class="site-header">
     <div class="wrap">
       <h1>SIWES-DD</h1>
-      <p class="tagline">Your UNICAL SIWES documents. Use the same email or phone and password as the SIWES portal.</p>
+      <p class="tagline">UNICAL SIWES Document Downloader. Log in to see your files, then download the ones you need.</p>
     </div>
   </header>
   <main class="wrap">
     <section class="section" aria-labelledby="docs-title">
       <h2 id="docs-title">Your documents</h2>
-      <p class="note">Use the same email or phone and password as the orginal SIWES portal. Log in to see your files, then download the ones you need.</p>
+      <p class="note">Use the same email or phone and password as the orginal SIWES portal.</p>
       
       <form id="f">
         <div class="field">
