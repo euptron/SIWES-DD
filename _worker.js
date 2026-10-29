@@ -423,8 +423,26 @@ function looksLikeFileOk(res, isPdf) {
   return res.body[0] === 0x25 && res.body[1] === 0x50 && res.body[2] === 0x44 && res.body[3] === 0x46;
 }
 
-function forPrint(html) {
-  let out = html.replace(/<link[\s\S]*?rel="stylesheet"[^>]*>/gi, '');
+async function forPrint(html, cookie) {
+  let out = html;
+  // inline the three portal CSS files so the print page has full styling
+  const sheetUrls = [
+    '/assets/css/all.min.css',
+    '/assets/css/bootstrap.min.css',
+    '/assets/css/main.css'
+  ];
+  for (const url of sheetUrls) {
+    const res = await portal('GET', url, { cookie });
+    if (res && res.status === 200 && res.text) {
+      out = out.replace(
+        new RegExp('<link[^>]+href="' + url.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '"[^>]*>', 'i'),
+        '<style>' + res.text + '</style>'
+      );
+    }
+  }
+  // rewrite logo image to absolute URL so it loads in the print context
+  out = out.replace(/src="\.\.\/assets\/img\/logo\.jpg"/gi, 'src="https://business77-1.web-hosting.com/assets/img/logo.jpg"');
+  // keep the existing @page / @media print rules and auto-print script already in the page
   const bits = '<style>@page { size: A4; margin: 14mm; } html, body { margin: 0; padding: 0; background: #ffffff; } img { max-width: 100%; height: auto; }</style>'
     + '<script>setTimeout(function () { window.print(); }, 600);</script>';
   if (/<\/body>/i.test(out)) out = out.replace(/<\/body>/i, bits + '</body>');
