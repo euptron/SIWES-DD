@@ -163,10 +163,10 @@ const PAGE = `<!DOCTYPE html>
       if (!j.ok) throw new Error(j.error || 'Could not reach the portal. Try again.');
       say('Files found');
       $('doc-list').innerHTML = j.documents.map(d =>
-        '<li data-path="' + d.path + '" data-file="' + d.file + '">' +
+        '<li data-path="' + d.path + '" data-file="' + d.file + '"' + (/\.html?$/i.test(d.file) ? ' data-kind="print"' : '') + '>' +
         '<span class="doc-name">' + prettyName(d.name) + '</span>' +
         '<span class="doc-size">' + (d.size > 1048576 ? (d.size / 1048576).toFixed(1) + ' MB' : Math.round(d.size / 1024) + ' KB') + '</span>' +
-        '<button type="button" class="btn doc-dl">Download</button>' +
+        '<button type="button" class="btn doc-dl">' + (/\.html?$/i.test(d.file) ? 'Print or save as PDF' : 'Download') + '</button>' +
         '</li>'
       ).join('');
       $('result').hidden = false;
@@ -184,6 +184,33 @@ const PAGE = `<!DOCTYPE html>
     const original = btn.textContent;
     btn.disabled = true;
     btn.textContent = 'Saving';
+    if (li.dataset.kind === 'print') {
+      const tab = window.open('', '_blank');
+      try {
+        if (!tab) throw new Error('Allow pop up windows for this site, then tap again.');
+        tab.document.write('<p style="font-family: sans-serif; padding: 2rem; color: #555;">Opening, one moment...</p>');
+        const r = await fetch('/api/doc', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: body({ path: li.dataset.path, mode: 'print' }) });
+        if (!r.ok) { const j = await r.json().catch(() => ({})); throw new Error(j.error || 'Could not open the letter. Try again.'); }
+        const html = await r.text();
+        tab.document.open();
+        tab.document.write(html);
+        tab.document.close();
+        const st = tab.document.createElement('style');
+        st.textContent = '@page { size: A4; margin: 14mm; } html, body { margin: 0; padding: 0; background: #ffffff; } img { max-width: 100%; height: auto; }';
+        (tab.document.head || tab.document.documentElement).appendChild(st);
+        const sc = tab.document.createElement('script');
+        sc.textContent = 'setTimeout(function () { window.print(); }, 500);';
+        tab.document.body.appendChild(sc);
+        say('Print sheet opening. Choose Save as PDF to keep a copy.');
+      } catch (e) {
+        say(e.message, true);
+        try { if (tab) tab.close(); } catch (_) {}
+      } finally {
+        btn.disabled = false;
+        btn.textContent = original;
+      }
+      return;
+    }
     try {
       const r = await fetch('/api/doc', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: body({ path: li.dataset.path }) });
       if (!r.ok) { const j = await r.json().catch(() => ({})); throw new Error(j.error || 'Download problem (status ' + r.status + '). Try again.'); }
@@ -403,7 +430,7 @@ function looksLikeFileOk(res, isPdf) {
 
 async function handleDoc(req) {
   if (tooMany(clientIp(req))) return new Response(JSON.stringify({ error: 'Too many tries. Wait 15 minutes.' }), { status: 429, headers: jsonHeaders });
-  const { identity = '', password = '', path: filePath = '' } = await req.json().catch(() => ({}));
+  const { identity = '', password = '', path: filePath = '', mode = '' } = await req.json().catch(() => ({}));
 
   const okPath = /^\/siwes_onboarding\/[A-Za-z0-9._\-/]+$/.test(filePath) || filePath === '/student/dashboard.php';
   if (!okPath || filePath.includes('..')) {
@@ -435,6 +462,9 @@ async function handleDoc(req) {
       type = filePath.endsWith('.pdf') ? 'application/pdf' : 'application/octet-stream';
     }
 
+    if (mode === 'print' && type === 'text/html; charset=utf-8') {
+      return new Response(data, { headers: { 'Content-Type': type } });
+    }
     return new Response(data, {
       headers: {
         'Content-Type': type,
