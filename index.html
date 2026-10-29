@@ -376,7 +376,7 @@
       if (!j.ok) throw new Error(j.error || 'Could not reach the portal. Try again.');
       say('Files found');
       $('doc-list').innerHTML = j.documents.map(d =>
-        '<li data-path="' + d.path + '" data-file="' + d.file + '"' + (/\.html?$/i.test(d.file) ? ' data-kind="print"' : '') + '>' +
+        '<li data-path="' + d.path + '" data-file="' + d.file + '"' + (/\.html?$/i.test(d.file) ? ' ' : '') + '>' +
         '<span class="doc-name">' + prettyName(d.name) + '</span>' +
         '<span class="doc-size">' +
         (d.size > 1048576 ? (d.size / 1048576).toFixed(1) + ' MB' : Math.round(d.size / 1024) + ' KB') +
