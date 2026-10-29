@@ -103,7 +103,8 @@ const PAGE = `<!DOCTYPE html>
   <main class="wrap">
     <section class="section" aria-labelledby="docs-title">
       <h2 id="docs-title">Your documents</h2>
-      <p class="note">Log in to see your files, then download the ones you need.</p>
+      <p class="note">Use the same email or phone and password as the orginal SIWES portal. Log in to see your files, then download the ones you need.</p>
+      
       <form id="f">
         <div class="field">
           <label class="field-label" for="identity">Email or phone number</label>
@@ -166,7 +167,7 @@ const PAGE = `<!DOCTYPE html>
         '<li data-path="' + d.path + '" data-file="' + d.file + '"' + (/\.html?$/i.test(d.file) ? ' data-kind="print"' : '') + '>' +
         '<span class="doc-name">' + prettyName(d.name) + '</span>' +
         '<span class="doc-size">' + (d.size > 1048576 ? (d.size / 1048576).toFixed(1) + ' MB' : Math.round(d.size / 1024) + ' KB') + '</span>' +
-        '<button type="button" class="btn doc-dl">' + (/\.html?$/i.test(d.file) ? 'Print or save as PDF' : 'Download') + '</button>' +
+        '<button type="button" class="btn doc-dl">Download</button>' +
         '</li>'
       ).join('');
       $('result').hidden = false;
@@ -195,12 +196,6 @@ const PAGE = `<!DOCTYPE html>
         tab.document.open();
         tab.document.write(html);
         tab.document.close();
-        const st = tab.document.createElement('style');
-        st.textContent = '@page { size: A4; margin: 14mm; } html, body { margin: 0; padding: 0; background: #ffffff; } img { max-width: 100%; height: auto; }';
-        (tab.document.head || tab.document.documentElement).appendChild(st);
-        const sc = tab.document.createElement('script');
-        sc.textContent = 'setTimeout(function () { window.print(); }, 500);';
-        tab.document.body.appendChild(sc);
         say('Print sheet opening. Choose Save as PDF to keep a copy.');
       } catch (e) {
         say(e.message, true);
@@ -428,6 +423,15 @@ function looksLikeFileOk(res, isPdf) {
   return res.body[0] === 0x25 && res.body[1] === 0x50 && res.body[2] === 0x44 && res.body[3] === 0x46;
 }
 
+function forPrint(html) {
+  let out = html.replace(/<script[\s\S]*?<\/script>/gi, '').replace(/<meta[^>]+http-equiv=["']?refresh["']?[^>]*>/gi, '');
+  const bits = '<style>@page { size: A4; margin: 14mm; } html, body { margin: 0; padding: 0; background: #ffffff; } img { max-width: 100%; height: auto; }</style>'
+    + '<script>setTimeout(function () { window.print(); }, 600);</script>';
+  if (/<\/body>/i.test(out)) out = out.replace(/<\/body>/i, bits + '</body>');
+  else out += bits;
+  return out;
+}
+
 async function handleDoc(req) {
   if (tooMany(clientIp(req))) return new Response(JSON.stringify({ error: 'Too many tries. Wait 15 minutes.' }), { status: 429, headers: jsonHeaders });
   const { identity = '', password = '', path: filePath = '', mode = '' } = await req.json().catch(() => ({}));
@@ -444,14 +448,14 @@ async function handleDoc(req) {
     if (filePath === '/student/dashboard.php') {
       const dash = await portal('GET', filePath, { cookie });
       if (!looksLikeFileOk(dash, false)) throw new Error('Could not load your receipt. Try again.');
-      data = dash.body;
+      data = mode === 'print' ? enc(forPrint(dash.text)) : dash.body;
       filename = 'Payment_Receipt.html';
       type = 'text/html; charset=utf-8';
     } else if (filePath.endsWith('introduction.php')) {
       const letter = await portal('GET', filePath, { cookie });
       if (!looksLikeFileOk(letter, false)) throw new Error('Could not load your letter. Try again.');
       const html = await inlineLetterImages(letter.text, cookie);
-      data = enc(html);
+      data = enc(mode === 'print' ? forPrint(html) : html);
       filename = 'Letter_of_Introduction.html';
       type = 'text/html; charset=utf-8';
     } else {
